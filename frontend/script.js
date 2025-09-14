@@ -27,7 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const printBtn = document.getElementById("print");
 
     // ✅ Backend API URL (update with your Render backend URL)
-    const API_URL = "https://your-backend.onrender.com/api";
+    const API_URL = "https://idcard-wpyj.onrender.com/api";
+
 
     // Generate ID Card
     generateBtn.addEventListener("click", () => {
