@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +7,6 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
 </head>
-
 <body>
     <!-- Navigation Bar -->
     <header>
@@ -30,17 +28,6 @@
         <div class="form-section">
             <h2>Student Details</h2>
             <p>Fill in the details to generate your digital student ID.</p>
-            <div class="form-group">
-                <label for="studentCategory">Student Category:</label>
-                <select name="studentCategory" id="studentCategory" required>
-                    <option value="">-- Select Category --</option>
-                    <option value="HS/Arts">HS - Arts</option>
-                    <option value="HS/Science">HS - Science</option>
-                    <option value="Degree/BA">Degree - BA</option>
-                    <option value="Degree/BSc">Degree - BSc</option>
-                </select>
-            </div>
-
 
             <input type="text" id="roll" placeholder="Enter student roll number" required>
             <input type="text" id="name" placeholder="Enter student name" required>
@@ -49,7 +36,7 @@
             <input type="text" id="blood-group" placeholder="Enter Blood Group" required>
             <input type="text" id="contact-number" placeholder="Enter Contact Number" required>
             <label for="text">Date of Issue:</label>
-            <input type="date" id="issue-date" placeholder="Enter Date of Issue" required>
+            <input type="date" id="issue-date" required>
             <label for="text">Enter Session:</label>
             <input type="text" id="sessionInput" placeholder="Session:YYYY-YY" maxlength="9" />
 
@@ -59,7 +46,6 @@
             <label for="text">Upload Signature:</label>
             <input type="file" id="signature" accept="image/*">
 
-
             <div class="buttons">
                 <button id="reset">Reset</button>
                 <button id="generate">Generate ID Card</button>
@@ -68,7 +54,6 @@
 
         <!-- ID Card Section -->
         <div class="id-card-section" id="id-card">
-            <!-- Header -->
             <div class="id-header">
                 <img src="./image/BClogo.png" alt="College Logo">
                 <div>
@@ -79,19 +64,13 @@
                 <span id="id-session">SESSION<br><span class="session-year">YYYY-YY</span></span>
             </div>
 
-            <!-- Main Body -->
             <div class="id-body">
                 <div class="photo-date-section">
-                    <!-- Student Photo -->
                     <img id="id-photo" class="id-photo" src="image/default-photo.png" alt="Student Photo">
-
-                    <!-- Date of Issue Below the Photo -->
                     <div class="issue-date">
                         <strong>Date of Issue:</strong> <span id="id-issue-date">XX-XX-XXXX</span>
                     </div>
                 </div>
-
-                <!-- Student Details -->
                 <div class="details">
                     <div class="id-title">COLLEGE ID CUM LIBRARY CARD</div>
                     <p><strong>Roll Number</strong>: <span id="id-roll">XXXXX</span></p>
@@ -102,22 +81,17 @@
                     <p><strong>Contact Number</strong>: <span id="id-contact-number">XXXXX</span></p>
                 </div>
             </div>
-            <!-- Barcode -->
+
             <div class="barcode-box">
                 <svg id="barcode"></svg>
             </div>
 
-            <!-- Signature, Barcode & Authority Signature in One Line -->
             <div class="footer-line">
                 <div class="signature-box">
-                    <!-- Card Holder Signature -->
                     <div class="signature-st">
-                        <img id="signature-holder" class="signature-s" src="image/default-signature.png"
-                            alt="Card Holder Signature">
+                        <img id="signature-holder" class="signature-s" src="image/default-signature.png" alt="Card Holder Signature">
                         <p>Signature of the Card<br>Holder</p>
                     </div>
-
-                    <!-- Issuing Authority Signature -->
                     <div class="signature-au">
                         <img src="./image/Ausign.jpg" class="signature-a" alt="Issuer Signature">
                         <p>Signature of the Issuing<br>Authority</p>
@@ -125,37 +99,25 @@
                 </div>
             </div>
 
-            <!-- Footer Note -->
             <div class="footer">
-                <p class="note">N.B:Kindly submit the card after the completion of the course.<br>© Developed by
-                    Computer Science Dept, Bahona College</p>
+                <p class="note">N.B: Kindly submit the card after the completion of the course.<br>© Developed by Computer Science Dept, Bahona College</p>
                 <button id="print" onclick="printIDCard()">Print ID Card</button>
             </div>
         </div>
     </section>
+
     <footer class="cs-footer">
         <div class="cs-footer-container">
             <div class="cs-footer-left">
                 <img src="image/BClogo.png" alt="Bahona College Logo" class="cs-footer-logo">
-                <p><strong>ID Card Generator</strong> powered by the Computer Science Department of Bahona College —
-                    ensuring identity, security, and innovation for all students.</p>
-                <div class="cs-social-icons">
-                    <a href="#"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a
-                        href="https://www.instagram.com/computersciencedept_bahona?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==">
-                        <i class="fab fa-instagram"></i>
-                    </a>
-                </div>
+                <p><strong>ID Card Generator</strong> powered by the Computer Science Department of Bahona College — ensuring identity, security, and innovation for all students.</p>
             </div>
-
             <div class="cs-footer-contact">
                 <h3>Contact Info</h3>
-                <p><i class="fas fa-map-marker-alt"></i> Bahona College, Jorhat, Assam 785101</p>
-                <p><i class="fas fa-phone-alt"></i> +91 6003519694</p>
+                <p>Bahona College, Jorhat, Assam 785101</p>
+                <p>+91 6003519694</p>
             </div>
         </div>
-
         <div class="cs-footer-bottom">
             <p>© 2025 Bahona College ID Generator | Developed by the Computer Science Department</p>
         </div>
@@ -163,5 +125,4 @@
 
     <script src="script.js" defer></script>
 </body>
-
 </html>

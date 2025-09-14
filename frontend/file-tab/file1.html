@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,24 +7,20 @@
     <link rel="stylesheet" href="file.css">
     <link rel="stylesheet" href="id.css">
 </head>
-
 <body>
-
-    <!-- Navigation Bar -->
     <header>
-        <header>
-            <nav class="navbar">
-                <div class="nav-left">
-                    <img src="../image/BClogo.png" alt="Logo" class="logo">
-                    <span class="brand">Bahona College</span>
-                </div>
-                <div class="nav-right">
-                    <span><a href="../index.html" class="nav-item desktop">ID PAGE</a></span>
-                    <span><a href="./file1.html" class="nav-item desktop">FILES</a></span>
-                </div>
-            </nav>
-        </header>
+        <nav class="navbar">
+            <div class="nav-left">
+                <img src="../image/BClogo.png" alt="Logo" class="logo">
+                <span class="brand">Bahona College</span>
+            </div>
+            <div class="nav-right">
+                <span><a href="../index.html" class="nav-item desktop">ID PAGE</a></span>
+                <span><a href="./file1.html" class="nav-item desktop">FILES</a></span>
+            </div>
+        </nav>
     </header>
+
     <div class="filebody">
         <h1>Student Records Management</h1>
 
@@ -35,29 +30,17 @@
             <button id="exportExcel" class="export-btn">Export to Excel</button>
             <button id="deleteAll" class="delete-btn">Delete All Records</button>
         </div>
-        <select id="categoryFilter" onchange="filterByCategory()" class="dropdown-filter">
-            <option value="">🔎 Filter by Category</option>
-            <option value="HS/Arts">HS - Arts</option>
-            <option value="HS/Science">HS - Science</option>
-            <option value="Degree/BA">Degree - BA</option>
-            <option value="Degree/BSc">Degree - BSc</option>
-        </select>
-
 
         <div class="student-list-container">
             <h3>Student Records</h3>
             <div id="studentList" class="student-list">
-                <!-- Student list will be populated from JavaScript -->
                 <p class="loading">Loading student records...</p>
             </div>
         </div>
     </div>
 
-
-    <!-- Include JavaScript & Excel Export Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
     <script src="file.js"></script>
 </body>
-
 </html>
