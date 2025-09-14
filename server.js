@@ -80,14 +80,25 @@ app.get("/api/students/roll/:roll", async (req, res) => {
 });
 
 // Search
+// Search
 app.get("/api/students/search", async (req, res) => {
-  const term = `%${req.query.term}%`;
-  const result = await pool.query(
-    "SELECT id, roll, name, fathername, course FROM students WHERE roll ILIKE $1 OR name ILIKE $1",
-    [term]
-  );
-  res.json(result.rows);
+  const search = req.query.term;
+  if (!search) {
+    return res.status(400).json({ error: "Missing search term" });
+  }
+
+  const term = `%${search}%`;
+  try {
+    const result = await pool.query(
+      "select id, roll, name, fathername, course from students where roll ilike $1 or name ilike $1",
+      [term]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
+
 
 // Delete by id
 app.delete("/api/students/:id", async (req, res) => {
