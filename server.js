@@ -79,22 +79,27 @@ app.get("/api/students/roll/:roll", async (req, res) => {
   res.json(result.rows[0]);
 });
 
-// Search
-// Search
+// Search (robust)
 app.get("/api/students/search", async (req, res) => {
-  const search = req.query.term;
-  if (!search) {
-    return res.status(400).json({ error: "Missing search term" });
-  }
-
-  const term = `%${search}%`;
   try {
+    const search = (req.query && req.query.term) ? String(req.query.term).trim() : "";
+
+    if (!search) {
+      // When no term provided, return empty array (or you can return 400)
+      return res.json([]);
+      // Or: res.status(400).json({ error: "Missing search term" });
+    }
+
+    const term = `%${search}%`;
+
     const result = await pool.query(
-      "select id, roll, name, fathername, course from students where roll ilike $1 or name ilike $1",
+      "SELECT id, roll, name, fathername, course FROM students WHERE roll ILIKE $1 OR name ILIKE $1",
       [term]
     );
+
     res.json(result.rows);
   } catch (err) {
+    console.error("Search error:", err);
     res.status(500).json({ error: err.message });
   }
 });
