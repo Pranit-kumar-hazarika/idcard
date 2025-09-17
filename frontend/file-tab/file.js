@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ✅ Backend API URL
-const API_URL = "https://your-backend.onrender.com/api";
+const API_URL = "https://idcard-pi6x.onrender.com/api";
 
 // Load students
 async function loadStudents() {
