@@ -5,14 +5,18 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("exportExcel").addEventListener("click", exportToExcel);
 });
 
-// ✅ Backend API URL
-const API_URL = "https://idcard-pi6x.onrender.com/api";
+// ✅ Supabase config (replace with your Supabase project URL and anon key)
+const SUPABASE_URL = "https://your-project.supabase.co";
+const SUPABASE_ANON_KEY = "your-anon-key";
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Load students
 async function loadStudents() {
     try {
-        const response = await fetch(`${API_URL}/students`);
-        const students = await response.json();
+        const { data: students, error } = await supabase
+            .from('students')
+            .select('*');
+        if (error) throw error;
         displayStudents(students);
     } catch (error) {
         console.error('Error loading students:', error);
@@ -49,10 +53,12 @@ function displayStudents(students) {
 async function deleteAllStudents() {
     if (confirm("Are you sure you want to delete ALL student records?")) {
         try {
-            const response = await fetch(`${API_URL}/students`, { method: 'DELETE' });
-            if (!response.ok) throw new Error('Failed to delete student records');
-            const result = await response.json();
-            alert(`Success: ${result.count} student records deleted`);
+            const { error } = await supabase
+                .from('students')
+                .delete()
+                .neq('id', 0); // delete all where id != 0
+            if (error) throw error;
+            alert('All student records deleted');
             loadStudents();
         } catch (error) {
             console.error('Error deleting students:', error);
@@ -65,7 +71,11 @@ async function deleteAllStudents() {
 async function deleteStudent(id) {
     if (confirm("Delete this student record?")) {
         try {
-            await fetch(`${API_URL}/students/${id}`, { method: 'DELETE' });
+            const { error } = await supabase
+                .from('students')
+                .delete()
+                .eq('id', id);
+            if (error) throw error;
             loadStudents();
         } catch (error) {
             console.error('Error deleting student:', error);
@@ -76,13 +86,12 @@ async function deleteStudent(id) {
 // View student details
 async function viewStudent(id) {
     try {
-        const listResponse = await fetch(`${API_URL}/students`);
-        const studentsList = await listResponse.json();
-        const student = studentsList.find(s => s.id === id);
-        if (!student) throw new Error("Student not found");
-
-        const response = await fetch(`${API_URL}/students/roll/${student.roll}`);
-        const studentDetails = await response.json();
+        const { data: student, error } = await supabase
+            .from('students')
+            .select('*')
+            .eq('id', id)
+            .single();
+        if (error || !student) throw new Error("Student not found");
 
         const modal = document.createElement('div');
         modal.className = 'student-modal';
@@ -92,21 +101,21 @@ async function viewStudent(id) {
                 <h2>Student Details</h2>
                 <div class="student-preview">
                     <div class="preview-photo">
-                        <img src="${studentDetails.photo_url}" alt="Student Photo">
+                        <img src="${student.photo_url}" alt="Student Photo">
                     </div>
                     <div class="preview-details">
-                        <p><strong>Roll:</strong> ${studentDetails.roll}</p>
-                        <p><strong>Name:</strong> ${studentDetails.name}</p>
-                        <p><strong>Father's Name:</strong> ${studentDetails.fathername}</p>
-                        <p><strong>Course:</strong> ${studentDetails.course}</p>
-                        <p><strong>Blood Group:</strong> ${studentDetails.blood_group}</p>
-                        <p><strong>Contact:</strong> ${studentDetails.contact_number}</p>
-                        <p><strong>Issue Date:</strong> ${studentDetails.issue_date}</p>
-                        <p><strong>Session:</strong> ${studentDetails.session}</p>
+                        <p><strong>Roll:</strong> ${student.roll}</p>
+                        <p><strong>Name:</strong> ${student.name}</p>
+                        <p><strong>Father's Name:</strong> ${student.fathername}</p>
+                        <p><strong>Course:</strong> ${student.course}</p>
+                        <p><strong>Blood Group:</strong> ${student.blood_group}</p>
+                        <p><strong>Contact:</strong> ${student.contact_number}</p>
+                        <p><strong>Issue Date:</strong> ${student.issue_date}</p>
+                        <p><strong>Session:</strong> ${student.session}</p>
                     </div>
                 </div>
                 <div class="signature-preview">
-                    <img src="${studentDetails.signature_url}" alt="Signature">
+                    <img src="${student.signature_url}" alt="Signature">
                 </div>
             </div>
         `;
@@ -123,13 +132,12 @@ async function viewStudent(id) {
 // Print student
 async function printStudent(id) {
     try {
-        const listResponse = await fetch(`${API_URL}/students`);
-        const studentsList = await listResponse.json();
-        const student = studentsList.find(s => s.id === id);
-        if (!student) throw new Error("Student not found");
-
-        const response = await fetch(`${API_URL}/students/roll/${student.roll}`);
-        const studentDetails = await response.json();
+        const { data: student, error } = await supabase
+            .from('students')
+            .select('*')
+            .eq('id', id)
+            .single();
+        if (error || !student) throw new Error("Student not found");
 
         const idCard = `
             <div class="id-card-section">
@@ -140,27 +148,27 @@ async function printStudent(id) {
                         <h3>বাহনা মহাবিদ্যালয়</h3>
                         <p>Affiliated to Dibrugarh University <br> PO: Bahona, Jorhat, Assam - 785101</p>
                     </div>
-                    <span>SESSION<br>${studentDetails.session}</span>
+                    <span>SESSION<br>${student.session}</span>
                 </div>
                 <div class="id-body">
                     <div class="photo-date-section">
-                        <img class="id-photo" src="${studentDetails.photo_url}" alt="Photo">
+                        <img class="id-photo" src="${student.photo_url}" alt="Photo">
                         <div class="issue-date">
-                            <strong>Date of Issue:</strong> ${studentDetails.issue_date}
+                            <strong>Date of Issue:</strong> ${student.issue_date}
                         </div>
                     </div>
                     <div class="details">
-                        <p><strong>Roll:</strong> ${studentDetails.roll}</p>
-                        <p><strong>Name:</strong> ${studentDetails.name}</p>
-                        <p><strong>Father:</strong> ${studentDetails.fathername}</p>
-                        <p><strong>Course:</strong> ${studentDetails.course}</p>
-                        <p><strong>Blood:</strong> ${studentDetails.blood_group}</p>
-                        <p><strong>Contact:</strong> ${studentDetails.contact_number}</p>
+                        <p><strong>Roll:</strong> ${student.roll}</p>
+                        <p><strong>Name:</strong> ${student.name}</p>
+                        <p><strong>Father:</strong> ${student.fathername}</p>
+                        <p><strong>Course:</strong> ${student.course}</p>
+                        <p><strong>Blood:</strong> ${student.blood_group}</p>
+                        <p><strong>Contact:</strong> ${student.contact_number}</p>
                     </div>
                 </div>
                 <div class="footer-line">
                     <div class="signature-st">
-                        <img src="${studentDetails.signature_url}" alt="Signature">
+                        <img src="${student.signature_url}" alt="Signature">
                         <p>Signature of Holder</p>
                     </div>
                 </div>
@@ -170,7 +178,7 @@ async function printStudent(id) {
         const original = document.body.innerHTML;
         document.body.innerHTML = `<div style="width:86mm;height:54mm;margin:auto;">${idCard}</div>`;
 
-        JsBarcode("#barcode", studentDetails.roll, { format: "CODE128", displayValue: false, width: 2, height: 40 });
+        // JsBarcode("#barcode", student.roll, { format: "CODE128", displayValue: false, width: 2, height: 40 });
 
         window.print();
         document.body.innerHTML = original;
@@ -182,8 +190,10 @@ async function printStudent(id) {
 // Export to Excel
 async function exportToExcel() {
     try {
-        const response = await fetch(`${API_URL}/students`);
-        const students = await response.json();
+        const { data: students, error } = await supabase
+            .from('students')
+            .select('*');
+        if (error) throw error;
         if (students.length === 0) {
             alert("No student records to export");
             return;
@@ -209,4 +219,3 @@ async function exportToExcel() {
         console.error('Error exporting:', error);
     }
 }
-    

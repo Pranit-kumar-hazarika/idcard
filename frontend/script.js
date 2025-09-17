@@ -26,8 +26,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const resetBtn = document.getElementById("reset");
     const printBtn = document.getElementById("print");
 
-    // ✅ Backend API URL (update with your Render backend URL)
-    const API_URL = "https://idcard-pi6x.onrender.com/api";
+    // ✅ Supabase config (replace with your Supabase project URL and anon key)
+    const SUPABASE_URL = "https://your-project.supabase.co";
+    const SUPABASE_ANON_KEY = "your-anon-key";
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 
     // Generate ID Card
@@ -126,6 +128,26 @@ document.addEventListener("DOMContentLoaded", () => {
         barcode.innerHTML = "";
     });
 
+    // Helper: Upload file to Supabase Storage and return public URL
+    async function uploadToSupabaseStorage(fileBase64, path) {
+        if (!fileBase64 || !fileBase64.startsWith("data:")) return null;
+        // Convert base64 to Blob
+        const res = await fetch(fileBase64);
+        const blob = await res.blob();
+        // Remove if file already exists (optional, for overwrite)
+        await supabase.storage.from('students').remove([path]);
+        // Upload
+        const { error } = await supabase.storage.from('students').upload(path, blob, {
+            cacheControl: '3600',
+            upsert: true,
+            contentType: blob.type
+        });
+        if (error) throw error;
+        // Get public URL
+        const { publicURL } = supabase.storage.from('students').getPublicUrl(path).data;
+        return publicURL;
+    }
+
     // Print and Save Data to Database
     printBtn.addEventListener("click", async () => {
         const roll = rollInput.value.trim();
@@ -143,29 +165,34 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const photo = idPhoto.src;
-        const signature = signatureHolder.src;
+        // Get base64 data for photo and signature
+        const photoBase64 = idPhoto.src;
+        const signatureBase64 = signatureHolder.src;
 
         try {
-            const response = await fetch(`${API_URL}/students`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    roll,
-                    name,
-                    fathername,
-                    course,
-                    bloodGroup,
-                    contactNumber,
-                    issueDate,
-                    session,
-                    photo,
-                    signature
-                })
-            });
+            // Upload images to Supabase Storage
+            let photo_url = null, signature_url = null;
+            if (photoBase64 && !photoBase64.includes("default-photo.png")) {
+                photo_url = await uploadToSupabaseStorage(photoBase64, `${roll}-photo.png`);
+            }
+            if (signatureBase64 && !signatureBase64.includes("default-signature.png")) {
+                signature_url = await uploadToSupabaseStorage(signatureBase64, `${roll}-sign.png`);
+            }
 
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || 'Failed to save student data');
+            // Insert student data into Supabase
+            const { error } = await supabase.from('students').insert([{
+                roll,
+                name,
+                fathername,
+                course,
+                blood_group: bloodGroup,
+                contact_number: contactNumber,
+                issue_date: issueDate,
+                session,
+                photo_url,
+                signature_url
+            }]);
+            if (error) throw error;
 
             // Print
             const printContent = document.querySelector(".id-card-section").outerHTML;
@@ -182,4 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error('Error saving student data:', error);
         }
     });
+
+    // Make sure to include Supabase JS client in your HTML:
+    // <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 });
