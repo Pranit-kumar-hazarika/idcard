@@ -8,12 +8,12 @@ document.addEventListener("DOMContentLoaded", () => {
 // ✅ Supabase config (replace with your Supabase project URL and anon key)
 const SUPABASE_URL = "https://kocwiefydcexvnakstwr.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvY3dpZWZ5ZGNleHZuYWtzdHdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjU5MDMsImV4cCI6MjA3MzcwMTkwM30.gfSxJivYrDQP557bnlUeaAFOGOPzbXQbTHZSuTkRmiI";
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Load students
 async function loadStudents() {
     try {
-        const { data: students, error } = await supabase
+        const { data: students, error } = await supabaseClient
             .from('students')
             .select('*');
         if (error) throw error;
@@ -53,7 +53,7 @@ function displayStudents(students) {
 async function deleteAllStudents() {
     if (confirm("Are you sure you want to delete ALL student records?")) {
         try {
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('students')
                 .delete()
                 .neq('id', 0); // delete all where id != 0
@@ -71,7 +71,7 @@ async function deleteAllStudents() {
 async function deleteStudent(id) {
     if (confirm("Delete this student record?")) {
         try {
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('students')
                 .delete()
                 .eq('id', id);
@@ -86,7 +86,7 @@ async function deleteStudent(id) {
 // View student details
 async function viewStudent(id) {
     try {
-        const { data: student, error } = await supabase
+        const { data: student, error } = await supabaseClient
             .from('students')
             .select('*')
             .eq('id', id)
@@ -132,7 +132,7 @@ async function viewStudent(id) {
 // Print student
 async function printStudent(id) {
     try {
-        const { data: student, error } = await supabase
+        const { data: student, error } = await supabaseClient
             .from('students')
             .select('*')
             .eq('id', id)
@@ -190,7 +190,7 @@ async function printStudent(id) {
 // Export to Excel
 async function exportToExcel() {
     try {
-        const { data: students, error } = await supabase
+        const { data: students, error } = await supabaseClient
             .from('students')
             .select('*');
         if (error) throw error;
