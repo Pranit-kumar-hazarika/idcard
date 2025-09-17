@@ -1,4 +1,8 @@
-
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 body {
     font-family: Arial, sans-serif;
     background-color: #f8f9fa;
@@ -20,13 +24,12 @@ body {
 
 .navbar {
   width: 100%;
-  position:absolute;
+  position:fixed;
   top: 0;
   left: 0;
   background: #2779ac;
   display: flex;
   justify-content: space-between;
-  align-items: center;
   padding: 20px 30px;
   z-index: 1000;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.55);
@@ -34,7 +37,6 @@ body {
   border-bottom-right-radius: 14px;
   box-sizing: border-box;
 }
-
 
 .nav-left {
   display: flex;
@@ -53,13 +55,16 @@ body {
   font-weight: bold;
   color: #ffffff;
 }
-
+@media (max-width: 768px){
+  .brand {
+    display: none;
+  }
+}
 .nav-right {
   display: flex;
   align-items: center;
   gap: 25px;
 }
-
 .nav-item {
   text-decoration: none;
   font-size: 16px;
@@ -74,6 +79,7 @@ body {
 }
 @media (max-width: 768px) {
   .navbar {
+    height: 80px;
     flex-direction: column;
     align-items: flex-start;
     padding: 15px 20px;
@@ -86,14 +92,15 @@ body {
   }
 
   .nav-right {
-    flex-direction: column;
-    gap: 10px;
+    flex-direction: row;
+    gap: 20px;
     width: 100%;
+    margin-top: -90px;
+    justify-content: flex-end;
   }
 
   .nav-item {
     width: 100%;
-    padding: 8px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
@@ -113,7 +120,16 @@ body {
   box-sizing: border-box;
 }
 
-
+@media (max-width: 768px)
+{
+  .container {
+    margin: 150px 10px 20px;
+    padding: 20px;
+    width: 90%;
+    flex-direction: column;
+    align-items: center;
+  }
+}
 .form-section {
   position: relative;
   flex: 1;
@@ -127,7 +143,6 @@ body {
   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.386);
   box-sizing: border-box;
 }
-
 
 .form-section h2 {
   text-align: center;
@@ -190,6 +205,13 @@ button {
   height: 40px;
 }
 
+@media (max-width: 768px){
+  #print {
+    width: 200px;
+    height: 50px;
+    margin-top: 50px;
+   }
+}
 button:hover {
   opacity: 0.9;
   transform: scale(1.02);
@@ -434,6 +456,15 @@ button:hover {
         size: 8.6cm 5.4cm;
         margin: 0;
     }
+}
+@media (max-width: 768px){
+  .id-card-section{
+    transform: scale(1); 
+    transform-origin: top left;
+    margin-top: 10px;
+    margin-left: 0px;
+
+  }
 }
 .cs-footer {
   width: 100%;

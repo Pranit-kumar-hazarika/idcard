@@ -41,6 +41,7 @@ function displayStudents(students) {
             <span>${student.roll} - ${student.name}</span>
             <div class="student-buttons">
                 <button class="view-btn" onclick="viewStudent(${student.id})">👁 View</button>
+                <button class="edit-btn" onclick="editStudent(${student.id})">✏️ Edit</button>
                 <button class="delete-btn" onclick="deleteStudent(${student.id})">🗑 Delete</button>
                 <button class="print-btn" onclick="printStudent(${student.id})">🖨 Print</button>
             </div>
@@ -217,5 +218,71 @@ async function exportToExcel() {
 
     } catch (error) {
         console.error('Error exporting:', error);
+    }
+}
+
+// Edit student feature
+window.editStudent = async function(id) {
+    try {
+        const { data: student, error } = await supabaseClient
+            .from('students')
+            .select('*')
+            .eq('id', id)
+            .single();
+        if (error || !student) throw new Error("Student not found");
+
+        // Create modal with form
+        const modal = document.createElement('div');
+        modal.className = 'student-modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h2>Edit Student</h2>
+                <form id="editStudentForm">
+                    <label>Roll: <input type="text" name="roll" value="${student.roll}" required></label><br>
+                    <label>Name: <input type="text" name="name" value="${student.name}" required></label><br>
+                    <label>Father's Name: <input type="text" name="fathername" value="${student.fathername}" required></label><br>
+                    <label>Course: <input type="text" name="course" value="${student.course}" required></label><br>
+                    <label>Blood Group: <input type="text" name="blood_group" value="${student.blood_group}" required></label><br>
+                    <label>Contact: <input type="text" name="contact_number" value="${student.contact_number}" required></label><br>
+                    <label>Issue Date: <input type="date" name="issue_date" value="${student.issue_date ? student.issue_date.split('T')[0] : ''}" required></label><br>
+                    <label>Session: <input type="text" name="session" value="${student.session}" required></label><br>
+                    <button type="submit" class="btn primary">Save</button>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        modal.querySelector('.close-button').onclick = () => document.body.removeChild(modal);
+
+        modal.querySelector('#editStudentForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const updated = {
+                roll: formData.get('roll'),
+                name: formData.get('name'),
+                fathername: formData.get('fathername'),
+                course: formData.get('course'),
+                blood_group: formData.get('blood_group'),
+                contact_number: formData.get('contact_number'),
+                issue_date: formData.get('issue_date'),
+                session: formData.get('session')
+            };
+            try {
+                const { error } = await supabaseClient
+                    .from('students')
+                    .update(updated)
+                    .eq('id', id);
+                if (error) throw error;
+                alert('Student updated successfully!');
+                document.body.removeChild(modal);
+                loadStudents();
+            } catch (err) {
+                alert('Failed to update student: ' + err.message);
+            }
+        };
+    } catch (error) {
+        alert('Failed to load student for editing');
+        console.error(error);
     }
 }

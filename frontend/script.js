@@ -27,9 +27,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const printBtn = document.getElementById("print");
 
     // ✅ Supabase config (replace with your Supabase project URL and anon key)
-    const SUPABASE_URL = "https://your-project.supabase.co";
-    const SUPABASE_ANON_KEY = "your-anon-key";
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const SUPABASE_URL = "https://kocwiefydcexvnakstwr.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvY3dpZWZ5ZGNleHZuYWtzdHdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMjU5MDMsImV4cCI6MjA3MzcwMTkwM30.gfSxJivYrDQP557bnlUeaAFOGOPzbXQbTHZSuTkRmiI";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 
     // Generate ID Card
@@ -135,16 +135,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const res = await fetch(fileBase64);
         const blob = await res.blob();
         // Remove if file already exists (optional, for overwrite)
-        await supabase.storage.from('students').remove([path]);
+        await supabaseClient.storage.from('students').remove([path]);
         // Upload
-        const { error } = await supabase.storage.from('students').upload(path, blob, {
+        const { error } = await supabaseClient.storage.from('students').upload(path, blob, {
             cacheControl: '3600',
             upsert: true,
             contentType: blob.type
         });
         if (error) throw error;
         // Get public URL
-        const { publicURL } = supabase.storage.from('students').getPublicUrl(path).data;
+        const { publicURL } = supabaseClient.storage.from('students').getPublicUrl(path).data;
         return publicURL;
     }
 
@@ -180,7 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // Insert student data into Supabase
-            const { error } = await supabase.from('students').insert([{
+            const { error } = await supabaseClient.from('students').insert([{
                 roll,
                 name,
                 fathername,
@@ -212,4 +212,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Make sure to include Supabase JS client in your HTML:
     // <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+});
+
+const navToggle = document.getElementById('nav-toggle');
+const navRight = document.getElementById('nav-right');
+
+navToggle.addEventListener('click', () => {
+  navRight.classList.toggle('show');
 });
