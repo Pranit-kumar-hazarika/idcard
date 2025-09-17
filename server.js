@@ -119,3 +119,7 @@ app.delete("/api/students", async (_req, res) => {
 
 // Start server
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
+app.get("/", (req, res) => {
+  res.send("✅ ID Card Backend is running!");
+});
