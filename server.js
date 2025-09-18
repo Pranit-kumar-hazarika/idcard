@@ -35,9 +35,7 @@ async function uploadToStorage(fileBase64, filename) {
   else if (mimeType === "image/svg+xml") ext = "svg";
   // Add more types if needed
 
-  // Use correct extension in filename
   const finalFilename = filename.replace(/\.\w+$/, `.${ext}`);
-
   const buffer = Buffer.from(fileBase64.split(",")[1], "base64");
 
   const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${finalFilename}`, {
@@ -49,7 +47,11 @@ async function uploadToStorage(fileBase64, filename) {
     body: buffer,
   });
 
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error("Supabase Storage upload error:", errText);
+    throw new Error(errText);
+  }
   return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${finalFilename}`;
 }
 
