@@ -16,10 +16,10 @@ create table public.students (
 -- Enable Row Level Security
 alter table public.students enable row level security;
 
--- Allow anyone to insert
+-- Allow anyone to insert (correct for Supabase/Postgres)
 create policy "Allow insert for all" on public.students
 for insert
-using (true);
+with check (true);
 
 -- Allow anyone to select
 create policy "Allow select for all" on public.students
