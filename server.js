@@ -35,15 +35,18 @@ async function uploadToStorage(fileBase64, filename) {
   else if (mimeType === "image/svg+xml") ext = "svg";
   // Add more types if needed
 
-  const finalFilename = filename.replace(/\.\w+$/, `.${ext}`);
+  // Sanitize filename (no spaces, only safe chars)
+  const safeFilename = filename.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_\-\.]/g, "");
+  const finalFilename = safeFilename.replace(/\.\w+$/, `.${ext}`);
   const buffer = Buffer.from(fileBase64.split(",")[1], "base64");
 
   const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${finalFilename}`, {
     method: "PUT",
-    headers: {
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": mimeType,
-    },
+    headers:
+      {
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": mimeType,
+      },
     body: buffer,
   });
 
