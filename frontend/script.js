@@ -214,9 +214,3 @@ document.addEventListener("DOMContentLoaded", () => {
     // <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 });
 
-const navToggle = document.getElementById('nav-toggle');
-const navRight = document.getElementById('nav-right');
-
-navToggle.addEventListener('click', () => {
-  navRight.classList.toggle('show');
-});

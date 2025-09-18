@@ -140,8 +140,9 @@ async function printStudent(id) {
             .single();
         if (error || !student) throw new Error("Student not found");
 
+        // Use the same structure as index.html's id-card-section
         const idCard = `
-            <div class="id-card-section">
+            <div class="id-card-section" id="id-card">
                 <div class="id-header">
                     <img src="../image/BClogo.png" alt="College Logo">
                     <div>
@@ -149,40 +150,66 @@ async function printStudent(id) {
                         <h3>বাহনা মহাবিদ্যালয়</h3>
                         <p>Affiliated to Dibrugarh University <br> PO: Bahona, Jorhat, Assam - 785101</p>
                     </div>
-                    <span>SESSION<br>${student.session}</span>
+                    <span id="id-session">SESSION<br><span class="session-year">${student.session}</span></span>
                 </div>
                 <div class="id-body">
                     <div class="photo-date-section">
-                        <img class="id-photo" src="${student.photo_url}" alt="Photo">
+                        <img id="id-photo" class="id-photo" src="${student.photo_url}" alt="Student Photo">
                         <div class="issue-date">
-                            <strong>Date of Issue:</strong> ${student.issue_date}
+                            <strong>Date of Issue:</strong> <span id="id-issue-date">${student.issue_date}</span>
                         </div>
                     </div>
                     <div class="details">
-                        <p><strong>Roll:</strong> ${student.roll}</p>
-                        <p><strong>Name:</strong> ${student.name}</p>
-                        <p><strong>Father:</strong> ${student.fathername}</p>
-                        <p><strong>Course:</strong> ${student.course}</p>
-                        <p><strong>Blood:</strong> ${student.blood_group}</p>
-                        <p><strong>Contact:</strong> ${student.contact_number}</p>
+                        <div class="id-title">COLLEGE ID CUM LIBRARY CARD</div>
+                        <p><strong>Roll Number</strong>: <span id="id-roll">${student.roll}</span></p>
+                        <p><strong>Name</strong>: <span id="id-name">${student.name}</span></p>
+                        <p><strong>Father's Name</strong>: <span id="id-fathername">${student.fathername}</span></p>
+                        <p><strong>Course</strong>: <span id="id-course">${student.course}</span></p>
+                        <p><strong>Blood Group</strong>: <span id="id-blood-group">${student.blood_group}</span></p>
+                        <p><strong>Contact Number</strong>: <span id="id-contact-number">${student.contact_number}</span></p>
                     </div>
                 </div>
+                <div class="barcode-box">
+                    <svg id="barcode"></svg>
+                </div>
                 <div class="footer-line">
-                    <div class="signature-st">
-                        <img src="${student.signature_url}" alt="Signature">
-                        <p>Signature of Holder</p>
+                    <div class="signature-box">
+                        <div class="signature-st">
+                            <img id="signature-holder" class="signature-s" src="${student.signature_url}" alt="Card Holder Signature">
+                            <p>Signature of the Card<br>Holder</p>
+                        </div>
+                        <div class="signature-au">
+                            <img src="../image/Ausign.jpg" class="signature-a" alt="Issuer Signature">
+                            <p>Signature of the Issuing<br>Authority</p>
+                        </div>
                     </div>
+                </div>
+                <div class="footer">
+                    <p class="note">N.B: Kindly submit the card after the completion of the course.<br>© Developed by Computer Science Dept, Bahona College</p>
                 </div>
             </div>
         `;
 
+        // Save original HTML
         const original = document.body.innerHTML;
-        document.body.innerHTML = `<div style="width:86mm;height:54mm;margin:auto;">${idCard}</div>`;
+        // Set up print content
+        document.body.innerHTML = `<div style="width: 8.6cm; height: 5.4cm; margin: auto;">${idCard}</div>`;
 
-        // JsBarcode("#barcode", student.roll, { format: "CODE128", displayValue: false, width: 2, height: 40 });
+        // Generate barcode
+        JsBarcode("#barcode", student.roll, {
+            format: "CODE128",
+            displayValue: false,
+            width: 2,
+            height: 40,
+        });
 
+        // Print
         window.print();
+        // Restore original HTML
         document.body.innerHTML = original;
+        // Optional: reload to restore event listeners
+        setTimeout(() => { window.location.reload(); }, 500);
+
     } catch (error) {
         console.error('Error printing student:', error);
     }

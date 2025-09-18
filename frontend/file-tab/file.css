@@ -277,3 +277,41 @@ button:hover {
 .print-modal-btn:hover {
   background-color: #0056b3;
 }
+
+@media (max-width: 600px) {
+  /* ...existing responsive code... */
+
+  .student-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    margin-top: 6px;
+  }
+  .student-buttons button {
+    flex: 1 1 45%;
+    min-width: 120px;
+    max-width: 100%;
+    margin-bottom: 4px;
+    font-size: 1rem;
+    padding: 10px 0;
+  }
+  .student-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+  }
+}
+
+/* For extra small screens, stack buttons vertically */
+@media (max-width: 400px) {
+  .student-buttons {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .student-buttons button {
+    width: 100%;
+    min-width: unset;
+    font-size: 1rem;
+    margin-bottom: 4px;
+  }
+}
