@@ -25,19 +25,32 @@ const BUCKET = "students";
 // Upload file to Supabase Storage
 async function uploadToStorage(fileBase64, filename) {
   if (!fileBase64 || !fileBase64.startsWith("data:")) return null;
+
+  // Extract MIME type and extension
+  const matches = fileBase64.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,/);
+  const mimeType = matches ? matches[1] : "image/png";
+  let ext = "png";
+  if (mimeType === "image/jpeg") ext = "jpg";
+  else if (mimeType === "image/webp") ext = "webp";
+  else if (mimeType === "image/svg+xml") ext = "svg";
+  // Add more types if needed
+
+  // Use correct extension in filename
+  const finalFilename = filename.replace(/\.\w+$/, `.${ext}`);
+
   const buffer = Buffer.from(fileBase64.split(",")[1], "base64");
 
-  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${filename}`, {
-    method: "PUT", // ✅ Must be PUT
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${finalFilename}`, {
+    method: "PUT",
     headers: {
       Authorization: `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": "image/png",
+      "Content-Type": mimeType,
     },
     body: buffer,
   });
 
   if (!res.ok) throw new Error(await res.text());
-  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${filename}`;
+  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${finalFilename}`;
 }
 
 // Create student
