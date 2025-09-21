@@ -32,7 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 
-    // Generate ID Card
     generateBtn.addEventListener("click", () => {
         if (
             rollInput.value.trim() === "" ||
@@ -53,7 +52,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Update ID Card preview
         idRoll.textContent = rollInput.value;
         idName.textContent = nameInput.value;
         idFathername.textContent = fathernameInput.value;
@@ -63,7 +61,6 @@ document.addEventListener("DOMContentLoaded", () => {
         idIssueDate.textContent = issueDateInput.value;
         idSession.innerHTML = `SESSION<br>${sessionInput.value.trim()}`;
 
-        // Handle Photo
         if (photoInput.files.length > 0) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -73,8 +70,6 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             idPhoto.src = "image/default-photo.png";
         }
-
-        // Handle Signature
         if (signatureInput.files.length > 0) {
             const reader = new FileReader();
             reader.onload = (e) => {
