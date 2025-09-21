@@ -165,7 +165,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Get base64 data for photo and signature
         const photoBase64 = idPhoto.src;
         const signatureBase64 = signatureHolder.src;
 
