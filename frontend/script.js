@@ -32,22 +32,32 @@ document.addEventListener("DOMContentLoaded", () => {
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 
+    // Helper: Upload file to Supabase Storage
+    async function uploadFile(file, path) {
+        if (!file) return null;
+
+        const { data, error } = await supabaseClient.storage
+            .from("students")
+            .upload(path, file, { upsert: true });
+
+        if (error) throw error;
+
+        const { publicURL } = supabaseClient.storage.from("students").getPublicUrl(path).data;
+        return publicURL;
+    }
+
+    // Generate button
     generateBtn.addEventListener("click", () => {
         if (
-            rollInput.value.trim() === "" ||
-            nameInput.value.trim() === "" ||
-            fathernameInput.value.trim() === "" ||
-            courseInput.value.trim() === "" ||
-            bloodGroupInput.value.trim() === "" ||
-            contactNumberInput.value.trim() === "" ||
-            issueDateInput.value.trim() === "" ||
-            sessionInput.value.trim() === ""
+            !rollInput.value || !nameInput.value || !fathernameInput.value ||
+            !courseInput.value || !bloodGroupInput.value || !contactNumberInput.value ||
+            !issueDateInput.value || !sessionInput.value
         ) {
             alert("Please fill in all the fields!");
             return;
         }
 
-        if (!/^\d{10}$/.test(contactNumberInput.value.trim())) {
+        if (!/^\d{10}$/.test(contactNumberInput.value)) {
             alert("Please enter a valid 10-digit contact number.");
             return;
         }
@@ -59,20 +69,17 @@ document.addEventListener("DOMContentLoaded", () => {
         idBloodGroup.textContent = bloodGroupInput.value;
         idContactNumber.textContent = contactNumberInput.value;
         idIssueDate.textContent = issueDateInput.value;
-        idSession.innerHTML = `SESSION<br>${sessionInput.value.trim()}`;
+        idSession.innerHTML = `SESSION<br>${sessionInput.value}`;
 
         if (photoInput.files.length > 0) {
             const reader = new FileReader();
-            reader.onload = (e) => {
-                idPhoto.src = e.target.result;
-            };
+            reader.onload = e => idPhoto.src = e.target.result;
             reader.readAsDataURL(photoInput.files[0]);
-        } else {
-            idPhoto.src = "image/default-photo.png";
-        }
+        } else idPhoto.src = "image/default-photo.png";
+
         if (signatureInput.files.length > 0) {
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = e => {
                 signatureHolder.src = e.target.result;
                 generateBarcode(rollInput.value);
             };
@@ -83,21 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Generate Barcode
-    function generateBarcode(roll) {
-        try {
-            JsBarcode(barcode, roll, {
-                format: "CODE128",
-                displayValue: false,
-                width: 2,
-                height: 40,
-            });
-        } catch (error) {
-            console.error("Error generating barcode:", error);
-        }
-    }
-
-    // Reset Form
+    // Reset button
     resetBtn.addEventListener("click", () => {
         rollInput.value = "";
         nameInput.value = "";
@@ -123,88 +116,50 @@ document.addEventListener("DOMContentLoaded", () => {
         barcode.innerHTML = "";
     });
 
-    // Helper: Upload file to Supabase Storage and return public URL
-    async function uploadToSupabaseStorage(fileBase64, path) {
-        if (!fileBase64 || !fileBase64.startsWith("data:")) return null;
-        // Convert base64 to Blob
-        const res = await fetch(fileBase64);
-        const blob = await res.blob();
-        // Remove if file already exists (optional, for overwrite)
-        await supabaseClient.storage.from('students').remove([path]);
-        // Upload
-        const { error } = await supabaseClient.storage.from('students').upload(path, blob, {
-            cacheControl: '3600',
-            upsert: true,
-            contentType: blob.type
-        });
-        if (error) throw error;
-        // Get public URL
-        const { publicURL } = supabaseClient.storage.from('students').getPublicUrl(path).data;
-        return publicURL;
+    // Barcode
+    function generateBarcode(roll) {
+        JsBarcode(barcode, roll, { format: "CODE128", displayValue: false, width: 2, height: 40 });
     }
 
-    // Print and Save Data to Database
+    // Print and save
     printBtn.addEventListener("click", async () => {
-        const roll = rollInput.value.trim();
-        const name = nameInput.value.trim();
-        const fathername = fathernameInput.value.trim();
-        const course = courseInput.value.trim();
-        const bloodGroup = bloodGroupInput.value.trim();
-        const contactNumber = contactNumberInput.value.trim();
-        const issueDate = issueDateInput.value.trim();
-        const session = sessionInput.value.trim();
-
-        if (!roll || !name || !fathername || !course ||
-            !bloodGroup || !contactNumber || !issueDate || !session) {
-            alert("Please fill in all fields before printing!");
-            return;
-        }
-
-        const photoBase64 = idPhoto.src;
-        const signatureBase64 = signatureHolder.src;
-
         try {
-            // Upload images to Supabase Storage
-            let photo_url = null, signature_url = null;
-            if (photoBase64 && !photoBase64.includes("default-photo.png")) {
-                photo_url = await uploadToSupabaseStorage(photoBase64, `${roll}-photo.png`);
-            }
-            if (signatureBase64 && !signatureBase64.includes("default-signature.png")) {
-                signature_url = await uploadToSupabaseStorage(signatureBase64, `${roll}-sign.png`);
+            if (!rollInput.value || !nameInput.value) {
+                alert("Please fill all fields before printing!");
+                return;
             }
 
-            // Insert student data into Supabase
-            const { error } = await supabaseClient.from('students').insert([{
-                roll,
-                name,
-                fathername,
-                course,
-                blood_group: bloodGroup,
-                contact_number: contactNumber,
-                issue_date: issueDate,
-                session,
+            const photoFile = photoInput.files[0] || null;
+            const signFile = signatureInput.files[0] || null;
+
+            const photo_url = photoFile ? await uploadFile(photoFile, `${rollInput.value}-photo.png`) : null;
+            const signature_url = signFile ? await uploadFile(signFile, `${rollInput.value}-sign.png`) : null;
+
+            const { error } = await supabaseClient.from("students").insert([{
+                roll: rollInput.value,
+                name: nameInput.value,
+                fathername: fathernameInput.value,
+                course: courseInput.value,
+                blood_group: bloodGroupInput.value,
+                contact_number: contactNumberInput.value,
+                issue_date: issueDateInput.value,
+                session: sessionInput.value,
                 photo_url,
                 signature_url
             }]);
             if (error) throw error;
 
-            // Print
+            // Print ID card
             const printContent = document.querySelector(".id-card-section").outerHTML;
             const originalContent = document.body.innerHTML;
-
             document.body.innerHTML = `<div style="width: 86mm; height: 54mm; margin: auto;">${printContent}</div>`;
             window.print();
             document.body.innerHTML = originalContent;
+            setTimeout(() => window.location.reload(), 500);
 
-            setTimeout(() => { window.location.reload(); }, 500);
-
-        } catch (error) {
-            alert(`Error: ${error.message}`);
-            console.error('Error saving student data:', error);
+        } catch (err) {
+            console.error(err);
+            alert("Error saving student: " + err.message);
         }
     });
-
-    // Make sure to include Supabase JS client in your HTML:
-    // <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 });
-
