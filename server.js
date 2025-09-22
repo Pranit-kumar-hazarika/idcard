@@ -11,15 +11,15 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json({ limit: "50mb" }));
 
-// 🔹 PostgreSQL (Supabase Database)
+// 🔹 PostgreSQL (Supabase Database) – use service_role connection string
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL, // must be service_role connection
   ssl: { rejectUnauthorized: false },
 });
 
 // 🔹 Supabase Storage
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_KEY;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY; // ✅ use service role key
 const BUCKET = "students";
 
 // Upload file to Supabase Storage
@@ -29,24 +29,23 @@ async function uploadToStorage(fileBase64, filename) {
   // Extract MIME type and extension
   const matches = fileBase64.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,/);
   const mimeType = matches ? matches[1] : "image/png";
+
   let ext = "png";
   if (mimeType === "image/jpeg") ext = "jpg";
   else if (mimeType === "image/webp") ext = "webp";
   else if (mimeType === "image/svg+xml") ext = "svg";
-  // Add more types if needed
 
-  // Sanitize filename (no spaces, only safe chars)
+  // Sanitize filename
   const safeFilename = filename.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_\-\.]/g, "");
   const finalFilename = safeFilename.replace(/\.\w+$/, `.${ext}`);
   const buffer = Buffer.from(fileBase64.split(",")[1], "base64");
 
   const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${finalFilename}`, {
     method: "PUT",
-    headers:
-      {
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": mimeType,
-      },
+    headers: {
+      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`, // ✅ service role key
+      "Content-Type": mimeType,
+    },
     body: buffer,
   });
 
@@ -55,9 +54,11 @@ async function uploadToStorage(fileBase64, filename) {
     console.error("Supabase Storage upload error:", errText);
     throw new Error(errText);
   }
+
   return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${finalFilename}`;
 }
 
+// 🔹 Create student
 app.post("/api/students", async (req, res) => {
   try {
     const { roll, name, fathername, course, bloodGroup, contactNumber, issueDate, session, photo, signature } = req.body;
@@ -75,11 +76,12 @@ app.post("/api/students", async (req, res) => {
 
     res.status(201).json({ id: result.rows[0].id, message: "Student created" });
   } catch (err) {
+    console.error("Error saving student:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
-// Get all students
+// 🔹 Get all students
 app.get("/api/students", async (_req, res) => {
   try {
     const result = await pool.query("SELECT * FROM students ORDER BY id DESC");
@@ -89,54 +91,45 @@ app.get("/api/students", async (_req, res) => {
   }
 });
 
-// Get by roll
+// 🔹 Get student by roll
 app.get("/api/students/roll/:roll", async (req, res) => {
   const result = await pool.query("SELECT * FROM students WHERE roll=$1", [req.params.roll]);
   if (result.rows.length === 0) return res.status(404).json({ error: "Not found" });
   res.json(result.rows[0]);
 });
 
-// Search (robust)
+// 🔹 Search students
 app.get("/api/students/search", async (req, res) => {
   try {
-    const search = (req.query && req.query.term) ? String(req.query.term).trim() : "";
-
-    if (!search) {
-      // When no term provided, return empty array (or you can return 400)
-      return res.json([]);
-      // Or: res.status(400).json({ error: "Missing search term" });
-    }
+    const search = req.query?.term?.trim() || "";
+    if (!search) return res.json([]);
 
     const term = `%${search}%`;
-
     const result = await pool.query(
       "SELECT id, roll, name, fathername, course FROM students WHERE roll ILIKE $1 OR name ILIKE $1",
       [term]
     );
-
     res.json(result.rows);
   } catch (err) {
-    console.error("Search error:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-
-// Delete by id
+// 🔹 Delete by id
 app.delete("/api/students/:id", async (req, res) => {
   await pool.query("DELETE FROM students WHERE id=$1", [req.params.id]);
   res.json({ message: "Deleted" });
 });
 
-// Delete all
+// 🔹 Delete all
 app.delete("/api/students", async (_req, res) => {
   const result = await pool.query("DELETE FROM students");
   res.json({ message: "All deleted", count: result.rowCount });
 });
 
-// Start server
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
-
+// 🔹 Health check
 app.get("/", (req, res) => {
-  res.send("✅ ID Card Backend is running!");
+  res.send("✅ ID Card Backend is running with service_role!");
 });
+
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
