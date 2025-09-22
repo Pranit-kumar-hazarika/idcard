@@ -58,7 +58,6 @@ async function uploadToStorage(fileBase64, filename) {
   return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${finalFilename}`;
 }
 
-// Create student
 app.post("/api/students", async (req, res) => {
   try {
     const { roll, name, fathername, course, bloodGroup, contactNumber, issueDate, session, photo, signature } = req.body;
